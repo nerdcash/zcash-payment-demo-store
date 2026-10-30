@@ -4,7 +4,7 @@ const receivedEl = document.querySelector("[data-received]");
 const paidAmountEl = document.querySelector("[data-paid-amount]");
 const watchEl = document.querySelector("[data-watch]");
 const copyButton = document.querySelector("[data-copy]");
-const address = document.querySelector("[data-address]")?.textContent?.trim() ?? "";
+let address = document.querySelector("[data-address]")?.textContent?.trim() ?? "";
 
 if (copyButton) {
   copyButton.addEventListener("click", async () => {
@@ -18,6 +18,16 @@ if (copyButton) {
       copyButton.textContent = "Select the address";
     }
   });
+}
+
+// Once an order is paid, the address, its QR code, and the zcash: wallet link
+// leave the page entirely, not just the view. If the order goes back to
+// awaiting payment, tick() reloads and the server renders them again.
+const PAYMENT_DETAILS = ".qr-card, .address-block, [data-address], .wallet-link";
+
+function removePaymentDetails() {
+  address = "";
+  for (const element of document.querySelectorAll(PAYMENT_DETAILS)) element.remove();
 }
 
 let lastStatus = body.dataset.status ?? "";
@@ -37,6 +47,7 @@ async function tick() {
   if (receivedEl) receivedEl.textContent = order.received;
   if (paidAmountEl) paidAmountEl.textContent = order.received;
   body.dataset.status = order.status;
+  if (order.status === "paid") removePaymentDetails();
   if (watchEl) {
     if (order.status === "paid") watchEl.textContent = "Payment received";
     else if (order.receivedZat > 0) watchEl.textContent = "Partial payment seen";
