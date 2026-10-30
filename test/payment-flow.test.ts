@@ -143,6 +143,13 @@ describe("payment flow", { concurrency: false }, () => {
     const paidHtml = await (await fetch(`${baseUrl}/orders/${orderId}`)).text();
     assert.ok(paidHtml.includes('data-status="paid"'));
     assert.equal(paidHtml.includes(address), false);
+    for (const leak of ["zcash:", "data-address", "wallet-link", "qr-card", "<svg class=\"qr", "u1testaddress"]) {
+      assert.equal(paidHtml.includes(leak), false, `paid page must not include ${leak}`);
+    }
+    const paidJson = await (await fetch(`${baseUrl}/api/orders/${orderId}`)).text();
+    for (const leak of [address, "zcash:", "qr", "address"]) {
+      assert.equal(paidJson.includes(leak), false, `paid poll response must not include ${leak}`);
+    }
 
     const reorg = await postWebhook(observation("zcash:7:v3", address, "0.01000000"));
     assert.equal((await reorg.json()).outcome, "applied");
@@ -158,6 +165,8 @@ describe("payment flow", { concurrency: false }, () => {
     assert.equal(html.includes("amount=0.08000000"), false);
     assert.ok(html.includes("Partial payment seen"));
     assert.ok(html.includes(address));
+    assert.ok(html.includes("data-address"));
+    assert.ok(html.includes(`href="zcash:${address}`));
   });
 
   it("prices a multi-item cart itself and ignores an unknown address", async () => {
