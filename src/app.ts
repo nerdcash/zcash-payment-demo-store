@@ -18,7 +18,7 @@ import {
   WebhookPayloadError,
   WebhookSignatureError,
   type ZcashPaymentClient,
-} from "./zcash-payment.js";
+} from "@nerdcash/zcash-payment-client";
 
 const ORDER_ID = /^hd_[0-9a-f]{16}$/;
 
