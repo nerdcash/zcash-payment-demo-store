@@ -140,6 +140,10 @@ describe("payment flow", { concurrency: false }, () => {
     assert.equal((await stale.json()).outcome, "stale");
     assert.equal((await orderStatus(orderId)).status, "paid");
 
+    const paidHtml = await (await fetch(`${baseUrl}/orders/${orderId}`)).text();
+    assert.ok(paidHtml.includes('data-status="paid"'));
+    assert.equal(paidHtml.includes(address), false);
+
     const reorg = await postWebhook(observation("zcash:7:v3", address, "0.01000000"));
     assert.equal((await reorg.json()).outcome, "applied");
     const revised = await orderStatus(orderId);
@@ -153,6 +157,7 @@ describe("payment flow", { concurrency: false }, () => {
     assert.ok(html.includes("amount=0.07000000"));
     assert.equal(html.includes("amount=0.08000000"), false);
     assert.ok(html.includes("Partial payment seen"));
+    assert.ok(html.includes(address));
   });
 
   it("prices a multi-item cart itself and ignores an unknown address", async () => {

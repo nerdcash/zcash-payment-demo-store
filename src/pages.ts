@@ -91,7 +91,10 @@ export async function orderPage(order: Order): Promise<string> {
   const partial = order.amountReceivedZat > 0 && order.amountReceivedZat < order.amountZat;
   const ask = partial ? formatZatAsZec(order.amountZat - order.amountReceivedZat) : due;
   const qrText = partial ? withPaymentAmount(order.qrText, ask) : order.qrText;
-  const qr = await qrMarkup(qrText);
+  // Once paid, the page omits the address and its QR code. If the order
+  // reverts to unpaid, pay.js reloads and the server renders them again.
+  const paid = order.status === "paid";
+  const qr = paid ? "" : await qrMarkup(qrText);
   const watch = partial ? "Partial payment seen" : "Watching for a payment";
   const items = order.items
     .map(
@@ -113,10 +116,10 @@ export async function orderPage(order: Order): Promise<string> {
       <section class="pay" aria-live="polite">
         <div class="awaiting">
           <div class="pay-layout">
-            <div class="qr-card">
+            ${paid ? "" : `<div class="qr-card">
               ${qr}
               <a class="wallet-link" href="${escapeHtml(qrText)}">Open in a Zcash wallet</a>
-            </div>
+            </div>`}
             <div class="pay-copy">
               <p class="eyebrow">Order ${escapeHtml(order.id)}</p>
               <h1>Send exactly</h1>
@@ -124,13 +127,13 @@ export async function orderPage(order: Order): Promise<string> {
               ${partial ? `<p class="fine">Already received ${escapeHtml(received)} ZEC. This code asks for the rest, so a wallet does not send the original total again.</p>` : ""}
               <p class="status-line"><span class="pulse" aria-hidden="true"></span> <span data-watch>${watch}</span></p>
               <p class="progress">Received <strong data-received>${escapeHtml(received)}</strong> of <strong>${escapeHtml(due)}</strong> ZEC</p>
-              <div class="address-block">
+              ${paid ? "" : `<div class="address-block">
                 <div class="address-label">
                   <span>Unified address</span>
                   <button class="text-button" type="button" data-copy>Copy</button>
                 </div>
                 <p class="address" data-address>${escapeHtml(order.address)}</p>
-              </div>
+              </div>`}
               <ul class="lines">${items}</ul>
               <p class="fine">This page updates when zcash-payment-service reports the total received at this address. The service is watching with a viewing key. It cannot spend the funds, and it does not take a fee.</p>
               <p class="fine">Receipt for ${escapeHtml(order.email)}</p>
@@ -147,7 +150,6 @@ export async function orderPage(order: Order): Promise<string> {
           <h1>Payment received</h1>
           <p class="amount amount-paid"><span data-paid-amount>${escapeHtml(received)}</span> <span class="unit">ZEC</span></p>
           <p class="lede">This order is paid. The payment service reported the total with a signed webhook. Nothing in the middle took a fee.</p>
-          <p class="address address-quiet" data-address>${escapeHtml(order.address)}</p>
           <a class="button" href="/">Back to the shelf</a>
         </div>
       </section>
