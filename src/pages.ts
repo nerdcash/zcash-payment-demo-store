@@ -86,7 +86,13 @@ export function checkoutPage(): string {
 }
 
 export async function orderPage(order: Order): Promise<string> {
-  const qr = await qrMarkup(order.qrText);
+  const due = formatZatAsZec(order.amountZat);
+  const received = formatZatAsZec(order.amountReceivedZat);
+  const partial = order.amountReceivedZat > 0 && order.amountReceivedZat < order.amountZat;
+  const ask = partial ? formatZatAsZec(order.amountZat - order.amountReceivedZat) : due;
+  const qrText = partial ? withPaymentAmount(order.qrText, ask) : order.qrText;
+  const qr = await qrMarkup(qrText);
+  const watch = partial ? "Partial payment seen" : "Watching for a payment";
   const items = order.items
     .map(
       (item) => `
@@ -96,8 +102,6 @@ export async function orderPage(order: Order): Promise<string> {
         </li>`,
     )
     .join("");
-  const received = formatZatAsZec(order.amountReceivedZat);
-  const due = formatZatAsZec(order.amountZat);
 
   return layout({
     title: order.status === "paid" ? "Payment received · Halden" : "Pay order · Halden",
@@ -111,13 +115,14 @@ export async function orderPage(order: Order): Promise<string> {
           <div class="pay-layout">
             <div class="qr-card">
               ${qr}
-              <a class="wallet-link" href="${escapeHtml(order.qrText)}">Open in a Zcash wallet</a>
+              <a class="wallet-link" href="${escapeHtml(qrText)}">Open in a Zcash wallet</a>
             </div>
             <div class="pay-copy">
               <p class="eyebrow">Order ${escapeHtml(order.id)}</p>
               <h1>Send exactly</h1>
-              <p class="amount">${escapeHtml(due)} <span>ZEC</span></p>
-              <p class="status-line"><span class="pulse" aria-hidden="true"></span> <span data-watch>Watching for a payment</span></p>
+              <p class="amount"><span data-ask>${escapeHtml(ask)}</span> <span>ZEC</span></p>
+              ${partial ? `<p class="fine">Already received ${escapeHtml(received)} ZEC. This code asks for the rest, so a wallet does not send the original total again.</p>` : ""}
+              <p class="status-line"><span class="pulse" aria-hidden="true"></span> <span data-watch>${watch}</span></p>
               <p class="progress">Received <strong data-received>${escapeHtml(received)}</strong> of <strong>${escapeHtml(due)}</strong> ZEC</p>
               <div class="address-block">
                 <div class="address-label">
@@ -195,6 +200,24 @@ function productCard(product: Product): string {
       </div>
     </article>
   `;
+}
+
+function withPaymentAmount(qrText: string, amount: string): string {
+  const queryAt = qrText.indexOf("?");
+  if (queryAt === -1) return `${qrText}?amount=${amount}`;
+  const base = qrText.slice(0, queryAt);
+  let replaced = false;
+  const parts = qrText
+    .slice(queryAt + 1)
+    .split("&")
+    .filter((part) => part.length > 0)
+    .map((part) => {
+      if (part.split("=", 1)[0] !== "amount") return part;
+      replaced = true;
+      return `amount=${amount}`;
+    });
+  if (!replaced) parts.unshift(`amount=${amount}`);
+  return `${base}?${parts.join("&")}`;
 }
 
 async function qrMarkup(text: string): Promise<string> {

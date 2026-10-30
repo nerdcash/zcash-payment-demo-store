@@ -149,6 +149,10 @@ describe("payment flow", { concurrency: false }, () => {
 
     const html = await (await fetch(`${baseUrl}/orders/${orderId}`)).text();
     assert.ok(html.includes('data-status="awaiting_payment"'));
+    assert.ok(html.includes("0.07000000"));
+    assert.ok(html.includes("amount=0.07000000"));
+    assert.equal(html.includes("amount=0.08000000"), false);
+    assert.ok(html.includes("Partial payment seen"));
   });
 
   it("prices a multi-item cart itself and ignores an unknown address", async () => {

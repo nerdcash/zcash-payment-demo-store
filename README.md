@@ -107,7 +107,7 @@ npm start
 
 `X-Signature` is the lowercase hex HMAC-SHA256 of the raw body, using `ZCASH_WEBHOOK_SECRET`.
 
-6. The store checks the signature, ignores a repeated `event_id`, and ignores an older `zcash:<id>:v<version>` once a newer one is applied. `total_received` is the cumulative amount seen at that address, not a wallet balance. With the service's default of zero confirmations, a mempool receipt can count and can later be revised. The order is paid when the latest total covers the price, and it returns to waiting if a later total drops below the price.
+6. The store checks the signature, ignores a repeated `event_id`, and ignores an older `zcash:<id>:v<version>` once a newer one is applied. `total_received` is the cumulative amount seen at that address, not a wallet balance. With the service's default of zero confirmations, a mempool receipt can count and can later be revised. The order is paid when the latest total covers the price, and it returns to waiting if a later total drops below the price. A partial total changes the amount on the displayed code to the unpaid remainder. The address and the other parameters stay the ones the service returned, so a wallet is not asked for the original total again.
 7. The next poll paints the payment-received state.
 
 The webhook URL inside Compose is `http://store:3000/webhooks/zcash-payments`. A non-2xx response is treated by the service as a permanent failure, except `429` and `5xx`, which it retries. A bad signature is `401` on purpose.

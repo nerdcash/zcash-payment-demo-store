@@ -56,11 +56,33 @@ function renderCount() {
   el.textContent = String(total);
 }
 
-function setQty(id, qty) {
-  const next = readCart().filter((line) => line.id !== id && productOf(line.id));
-  if (qty > 0) next.push({ id, qty: Math.min(9, qty) });
+function setQty(id, qty, focusAction) {
+  const capped = Math.min(9, qty);
+  let found = false;
+  const next = [];
+  for (const line of readCart()) {
+    if (!productOf(line.id)) continue;
+    if (line.id !== id) {
+      next.push(line);
+      continue;
+    }
+    found = true;
+    if (capped > 0) next.push({ id, qty: capped });
+  }
+  if (!found && capped > 0 && productOf(id)) next.push({ id, qty: capped });
   writeCart(next);
   renderPage();
+  if (focusAction) focusCartControl(id, focusAction, capped);
+}
+
+function focusCartControl(id, action, qty) {
+  const root = document.getElementById("cart-root");
+  if (!root) return;
+  const selector = qty > 0
+    ? `[data-product="${CSS.escape(id)}"][data-action="${action}"]`
+    : "button, a";
+  const target = root.querySelector(selector);
+  if (target instanceof HTMLElement) target.focus();
 }
 
 function h(tag, attrs, children) {
@@ -90,12 +112,12 @@ function renderCart(root) {
 
   const list = h("ul", { class: "cart-list" });
   for (const line of cart) {
-    const dec = h("button", { type: "button", class: "step", "aria-label": `Fewer ${line.product.name}` }, [text("−")]);
-    const inc = h("button", { type: "button", class: "step", "aria-label": `More ${line.product.name}` }, [text("+")]);
-    dec.addEventListener("click", () => setQty(line.id, line.qty - 1));
-    inc.addEventListener("click", () => setQty(line.id, line.qty + 1));
-    const remove = h("button", { type: "button", class: "text-button" }, [text("Remove")]);
-    remove.addEventListener("click", () => setQty(line.id, 0));
+    const dec = h("button", { type: "button", class: "step", "data-product": line.id, "data-action": "dec", "aria-label": `Fewer ${line.product.name}` }, [text("−")]);
+    const inc = h("button", { type: "button", class: "step", "data-product": line.id, "data-action": "inc", "aria-label": `More ${line.product.name}` }, [text("+")]);
+    dec.addEventListener("click", () => setQty(line.id, line.qty - 1, "dec"));
+    inc.addEventListener("click", () => setQty(line.id, line.qty + 1, "inc"));
+    const remove = h("button", { type: "button", class: "text-button", "data-product": line.id, "data-action": "remove" }, [text("Remove")]);
+    remove.addEventListener("click", () => setQty(line.id, 0, "remove"));
     const lineTotal = formatZec(line.product.priceZat * line.qty);
     list.append(
       h("li", {}, [
