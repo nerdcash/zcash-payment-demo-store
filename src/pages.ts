@@ -49,7 +49,7 @@ export function productPage(product: Product): string {
             <p class="eyebrow">Halden</p>
             <h1>${escapeHtml(product.name)}</h1>
             <p class="lede">${escapeHtml(product.description)}</p>
-            <p class="price price-large">${escapeHtml(priceLabel(product.priceZat))} <span>ZEC</span></p>
+            <p class="price price-large">${escapeHtml(priceLabel(product.priceZat))} <span class="unit">ZEC</span></p>
             <button class="button" type="button" data-add="${escapeHtml(product.id)}">Add to cart</button>
             <p class="fine">Paid in Zcash at checkout. You get a new shielded address for this order.</p>
           </div>
@@ -120,7 +120,7 @@ export async function orderPage(order: Order): Promise<string> {
             <div class="pay-copy">
               <p class="eyebrow">Order ${escapeHtml(order.id)}</p>
               <h1>Send exactly</h1>
-              <p class="amount"><span data-ask>${escapeHtml(ask)}</span> <span>ZEC</span></p>
+              <p class="amount"><span data-ask>${escapeHtml(ask)}</span> <span class="unit">ZEC</span></p>
               ${partial ? `<p class="fine">Already received ${escapeHtml(received)} ZEC. This code asks for the rest, so a wallet does not send the original total again.</p>` : ""}
               <p class="status-line"><span class="pulse" aria-hidden="true"></span> <span data-watch>${watch}</span></p>
               <p class="progress">Received <strong data-received>${escapeHtml(received)}</strong> of <strong>${escapeHtml(due)}</strong> ZEC</p>
@@ -145,7 +145,7 @@ export async function orderPage(order: Order): Promise<string> {
           </div>
           <p class="eyebrow">Order ${escapeHtml(order.id)}</p>
           <h1>Payment received</h1>
-          <p class="amount amount-paid"><span data-paid-amount>${escapeHtml(received)}</span> <span>ZEC</span></p>
+          <p class="amount amount-paid"><span data-paid-amount>${escapeHtml(received)}</span> <span class="unit">ZEC</span></p>
           <p class="lede">This order is paid. The payment service reported the total with a signed webhook. Nothing in the middle took a fee.</p>
           <p class="address address-quiet" data-address>${escapeHtml(order.address)}</p>
           <a class="button" href="/">Back to the shelf</a>
@@ -194,7 +194,7 @@ function productCard(product: Product): string {
         <h2><a href="${href}">${escapeHtml(product.name)}</a></h2>
         <p>${escapeHtml(product.blurb)}</p>
         <div class="card-row">
-          <p class="price">${escapeHtml(priceLabel(product.priceZat))} <span>ZEC</span></p>
+          <p class="price">${escapeHtml(priceLabel(product.priceZat))} <span class="unit">ZEC</span></p>
           <button class="button button-small" type="button" data-add="${escapeHtml(product.id)}">Add to cart</button>
         </div>
       </div>

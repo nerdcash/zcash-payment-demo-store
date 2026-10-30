@@ -213,8 +213,8 @@ main {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-.price span,
-.amount span {
+.price > span,
+.amount > .unit {
   font-family: var(--sans);
   font-size: 0.78rem;
   letter-spacing: 0.12em;

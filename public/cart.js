@@ -136,7 +136,7 @@ function renderCart(root) {
   const total = cart.reduce((sum, line) => sum + line.product.priceZat * line.qty, 0);
   const summary = h("aside", { class: "summary" }, [
     h("p", { class: "eyebrow" }, [text("Total")]),
-    h("p", { class: "amount amount-summary" }, [text(formatZec(total)), h("span", {}, [text("ZEC")])]),
+    h("p", { class: "amount amount-summary" }, [text(formatZec(total)), h("span", { class: "unit" }, [text("ZEC")])]),
     h("a", { class: "button", href: "/checkout" }, [text("Checkout")]),
   ]);
   root.append(h("div", { class: "cart-layout" }, [list, summary]));
@@ -214,7 +214,7 @@ function renderCheckout(root) {
   const total = cart.reduce((sum, line) => sum + line.product.priceZat * line.qty, 0);
   const summary = h("aside", { class: "summary" }, [
     h("p", { class: "eyebrow" }, [text("Due")]),
-    h("p", { class: "amount amount-summary" }, [text(formatZec(total)), h("span", {}, [text("ZEC")])]),
+    h("p", { class: "amount amount-summary" }, [text(formatZec(total)), h("span", { class: "unit" }, [text("ZEC")])]),
     list,
   ]);
   root.append(h("div", { class: "cart-layout" }, [form, summary]));
