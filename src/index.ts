@@ -1,7 +1,7 @@
 import { createApp } from "./app.js";
 import { loadEnvFile } from "./env.js";
 import { openOrders } from "./orders.js";
-import { createZcashPaymentClient } from "./zcash-payment.js";
+import { createZcashPaymentClient } from "@nerdcash/zcash-payment-client";
 
 loadEnvFile();
 

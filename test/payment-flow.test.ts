@@ -7,7 +7,7 @@ import { getProduct } from "../src/catalog.js";
 import { formatZatAsZec } from "../src/money.js";
 import { openOrders, type OrderStore } from "../src/orders.js";
 import { createApp } from "../src/app.js";
-import { createZcashPaymentClient, WebhookSignatureError } from "../src/zcash-payment.js";
+import { createZcashPaymentClient, WebhookSignatureError } from "@nerdcash/zcash-payment-client";
 
 const SECRET = "test-webhook-secret";
 
